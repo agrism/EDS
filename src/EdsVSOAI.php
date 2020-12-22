@@ -73,7 +73,7 @@ class EdsVSOAI
 
 	public function getHead(): Element
 	{
-		return (new Element())->addChild((new Element('Precizejums'))->addContent('true'))
+		return (new Element())->addChild((new Element('Precizejums'))->addContent('false'))
 			->addChild((new Element('PrecizejamaisDokuments'))
 				->addAttribute(new Attribute('xsi:nil', 'true')))
 			->addChild((new Element('Id'))->addContent(RAND(10000000,99999999)))
