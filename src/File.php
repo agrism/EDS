@@ -2,24 +2,26 @@
 
 namespace Eds;
 
-use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
-use Box\Spout\Reader\XLSX\Sheet;
+use Eds\Gui\Gui;
 
-class File
+abstract class File
 {
-	private $file;
-	private $inputName = 'file__';
-	private $sheets = [];
-	private $activeSheet = '';
+	protected $file;
+	protected $inputName = 'file__';
+	protected $sheets = [];
+	protected $activeSheet = '';
 
-	private $salaries = [];
-	private $privateCorporateIncome = [];
-	private $privatePersonalIncome = [];
+	/**
+	 * @var string
+	 */
+	private $form = '';
+
+	public static function factory(){
+		return new static;
+	}
 
 	public function renderForm(): self
 	{
-
-//		dump($_POST[$this->inputName] ?? 2);
 
 		$form = [];
 		$form[] = '<form method="post">';
@@ -33,12 +35,41 @@ class File
 
 		$form[] = '</form>';
 
-		$form[] = '<a href="/?tab=tab" target="_blank" >Get File</a>';
+		$form[] = '<a href="/?report='.Gui::factory()->getActiveReportName().'&tab=tab" target="_blank" >Get File</a>';
 
-		echo implode('', $form);
+		$this->form = implode('', $form);
 
 		return $this;
 	}
+
+	/**
+	 * @param  string  $fileName
+	 * @param  string  $filePath
+	 */
+	public function renderOpenFileAndMaybeStop(string $fileName, string $filePath){
+		if (($_GET['tab'] ?? null) == 'tab') {
+			header('Content-type: text/xml');
+			header('Content-Disposition: attachment; filename="'.$fileName.'"');
+			header('Pragma: public');
+			header('Cache-control: private');
+			header('Expires: -1');
+			echo file_get_contents($filePath);
+			exit;
+		}
+	}
+
+	public function printForm(): self
+	{
+		echo $this->form;
+		return $this;
+	}
+
+
+	public function getForm(): string
+	{
+		return strval($this->form);
+	}
+
 
 	public function getSheetOption(): string
 	{
@@ -56,6 +87,9 @@ class File
 		return implode('', $render);
 	}
 
+	/**
+	 * @return $this
+	 */
 	public function readForm(): self
 	{
 		$f = !empty($_POST[$this->inputName]) ? $_POST[$this->inputName] : null;
@@ -66,125 +100,20 @@ class File
 		return $this;
 	}
 
-	public function readFile(): self
-	{
+	public abstract function readFile(): self;
 
-		if ($this->file) {
-			$reader = ReaderEntityFactory::createReaderFromFile($this->file);
-			$reader->open($this->file);
-
-
-			foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
-				/**
-				 * @var $sheet Sheet
-				 */
-				$this->sheets[] = $sheet->getName();
-				if ($sheet->isActive()) {
-					$this->activeSheet = $sheet->getName();
-				}
-			}
-
-			// override active sheet
-			if (($_POST['activeSheet'] ?? null) && in_array($_POST['activeSheet'], $this->sheets)) {
-				$this->activeSheet = $_POST['activeSheet'];
-			}
-
-			$activeSheetRecord = null;
-
-			foreach ($reader->getSheetIterator() as $sheetIndex => $sheet) {
-				if ($sheet->getName() == $this->activeSheet) {
-					$activeSheetRecord = $sheet;
-					break;
-				}
-			}
-
-//			dump('active sheet record: '.$activeSheetRecord->getName());
-
-			$needCollectData = false;
-			$needCollectData2 = false;
-
-			$data = [];
-			$data2 = [];
-
-			foreach ($activeSheetRecord->getRowIterator() as $rowIndex => $row) {
-
-				// -0
-
-				$cells = $row->getCells();
-
-				if (!$cells[2]->getValue()) {
-					continue;
-				}
-
-
-				if (str_starts_with($cells[2]->getValue(), 'ALGAS ')) {
-					$needCollectData = true;
-				}
-
-				if (str_starts_with($cells[2]->getValue(), 'AUTORATLĪDZĪBAS, Īre, Noma ')) {
-					$needCollectData = false;
-				}
-
-				if ($needCollectData) {
-					$data[] = $cells;
-				}
-
-
-				/////-2
-
-				if (str_starts_with($cells[2]->getValue(), 'AUTORATLĪDZĪBAS, Īre, Noma ')) {
-					$needCollectData2 = true;
-				}
-
-				if (str_starts_with($cells[2]->getValue(), 'Saņēmējs')) {
-					$needCollectData2 = false;
-				}
-
-				if ($needCollectData2) {
-					$data2[] = $cells;
-				}
-
-
-			}
-
-			$salaries = $this->getCleanData($data);
-			$private = $this->getCleanData($data2);
-
-
-			$privatePersonalIncome = [];
-			$privateCorporateIncome = [];
-
-			foreach ($private as $privateItem){
-				if( $this->filterPrivatPersonalIncome($privateItem) ){
-					$privatePersonalIncome[] = $privateItem;
-				} else {
-					$privateCorporateIncome[] = $privateItem;
-				}
-			}
-
-			$this->salaries = $salaries;
-			$this->privatePersonalIncome = $privatePersonalIncome;
-			$this->privateCorporateIncome =$privateCorporateIncome;
-
-		}
-		return $this;
-	}
-
-	/**
-	 * @param  array  $rows
-	 */
-	private function getCleanData($rows = [])
+	protected function getCleanData($rows = [], $titleRowIndex = 0)
 	{
 		$salaries = [];
 		$indexes = [];
 
 		foreach ($rows as $index => $cells) {
-			if (!$index) {
+			if ($index < $titleRowIndex) {
 				continue;
 			}
-			if ($index === 1) {
-				foreach ($cells as $cell) {
-					$indexes[] = $cell->getValue();
+			if ($index === $titleRowIndex) {
+				foreach ($cells as $cellIndex => $cell) {
+					$indexes[] = $cell->getValue().'_'.$cellIndex;
 				}
 				continue;
 			}
@@ -196,54 +125,18 @@ class File
 					continue;
 				}
 
-				$temp[$indexes[$cellIndex]] = $cell->getValue();
+				$cellValue = $cell->getValue();
+
+				if($cellValue instanceof \DateTime){
+					$cellValue = $cellValue->format('Y-m-d');
+				}
+
+				$temp[$indexes[$cellIndex]] = $cellValue;
 			}
 			$salaries[] = $temp;
 		}
 
 		return $salaries;
 	}
-
-	private function filterPrivatPersonalIncome($private = [])
-	{
-		$isPrivate = false;
-		foreach ($private as $key => $value) {
-			if ($key == 'UIN') {
-
-				if (intval($value) === 0) {
-					$isPrivate = true;
-				}
-
-				break;
-			}
-		}
-
-		return $isPrivate;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getSalaries(): array
-	{
-		return $this->salaries;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getPrivateCorporateIncome(): array
-	{
-		return $this->privateCorporateIncome;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getPrivatePersonalIncome(): array
-	{
-		return $this->privatePersonalIncome;
-	}
-
 
 }

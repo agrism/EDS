@@ -2,3 +2,5 @@
 vendor/
 .env
 out/
+*.xlsx
+*.xml

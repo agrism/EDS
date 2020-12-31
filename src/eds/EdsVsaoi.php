@@ -1,14 +1,14 @@
 <?php
 
 
-namespace Eds;
+namespace Eds\Eds;
 
 
 use Eds\Xml\Attribute;
 use Eds\Xml\Element;
 use Ramsey\Uuid\Uuid;
 
-class EdsVSOAI
+class EdsVsaoi
 {
 
 	/**

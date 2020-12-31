@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Eds;
+namespace Eds\Eds;
 
 
 use Eds\Xml\Attribute;

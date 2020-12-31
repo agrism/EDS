@@ -26,6 +26,12 @@ class Element
 		$this->name = $name;
 	}
 
+	public static function factory(string $name = null): self
+	{
+		return new self($name);
+	}
+
+
 	/**
 	 * @param  Attribute  $attribute
 	 * @return Element
