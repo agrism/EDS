@@ -28,12 +28,12 @@ class EgoIinKopsavilkums extends Report
 		foreach ($personalIncomeTax as $incomeItem) {
 			$xmlContent->addLine(
 				1,
-				$incomeItem['Vārds, Uzvārds'],
+				$incomeItem['Vārds, Uzvārds_2'],
 				'1003',
-				'2020-01-01',
-				'2020-11-30',
+				'2020-12-01',
+				'2020-12-31',
 				11,
-				$incomeItem['Bruto'],
+				$incomeItem['Bruto_6'],
 				0,
 				0,
 				0,
@@ -41,8 +41,8 @@ class EgoIinKopsavilkums extends Report
 				0,
 				0,
 				0,
-				$incomeItem['Neapliek, EUR'],
-				$incomeItem['IIN']
+				$incomeItem['Neapliek, EUR_10'],
+				$incomeItem['IIN_13']
 			);
 		}
 

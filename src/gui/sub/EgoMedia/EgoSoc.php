@@ -32,11 +32,11 @@ class EgoSoc extends Report
 				foreach ($salaries as $incomeItem) {
 					$tabRows[] = EdsVsaoi::factory()->getRow(
 						'12121212656',
-						$incomeItem['Vārds, Uzvārds'] ?? 'n/a',
+						$incomeItem['Vārds, Uzvārds_2'] ?? 'n/a',
 						'DN',
-						strval($incomeItem['Bruto alga']),
-						strval($incomeItem['SOC DN'] + $incomeItem['SOC DD']),
-						$incomeItem['IIN'] ?? '0',
+						strval($incomeItem['Bruto alga_6'] ?? ''),
+						strval(($incomeItem['SOC DN_7'] ?? 0) + ($incomeItem['SOC DD_8']?? 0)),
+						$incomeItem['IIN_13'] ?? '0',
 						'0.36',
 						'155',
 					);
@@ -48,10 +48,10 @@ class EgoSoc extends Report
 				foreach ($personalIncomeTax as $incomeItem) {
 					$tabRows[] = EdsVsaoi::factory()->getRow(
 						'11111112656',
-						$incomeItem['Vārds, Uzvārds'] ?? 'n/a',
+						$incomeItem['Vārds, Uzvārds_2'] ?? 'n/a',
 						'AS',
-						$incomeItem['Bruto'] ?? '0',
-						$incomeItem['VSAOI'] ?? '0',
+						$incomeItem['Bruto_6'] ?? '0',
+						$incomeItem['VSAOI_8'] ?? '0',
 						'0',
 						'0',
 						'0',

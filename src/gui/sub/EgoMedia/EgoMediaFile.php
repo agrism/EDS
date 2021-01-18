@@ -160,7 +160,7 @@ class EgoMediaFile extends File
 	{
 		$isPrivate = false;
 		foreach ($private as $key => $value) {
-			if ($key == 'UIN') {
+			if ($key == 'UIN_15') {
 
 				if (intval($value) === 0) {
 					$isPrivate = true;
