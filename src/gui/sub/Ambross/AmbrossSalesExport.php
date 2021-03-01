@@ -51,10 +51,10 @@ class AmbrossSalesExport extends Report
 
 
 				// todo check problems
-				$withOutVAT = floatval($document['Kopā bez PVN_5']) * 100 + floatval($document['Omniva Venipack_6']) * 100;
+				$withOutVAT = floatval($document['Kopā bez PVN_5']) * 100 + floatval($document['Izm.1_6']) * 100;
 				$vat = floatval($document['PVN_7']) * 100;
 				$withVat = floatval($document['Kopā ar PVN_8']) * 100;
-				$isCash = boolval($document['Kopā ar PVN_10']);
+				$isCash = boolval($document['Kopā ar PVN_10'] ?? false);
 				$vatRate = intval(round($vat / $withOutVAT * 100, 0));
 				$sumDifference = $withOutVAT + $vat - $withVat;
 
