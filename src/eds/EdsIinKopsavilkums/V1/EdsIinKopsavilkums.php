@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Eds\Eds;
+namespace Eds\Eds\EdsIinKopsavilkums\V1;
 
 
 use Eds\Xml\Attribute;
@@ -111,13 +111,12 @@ class EdsIinKopsavilkums
 	public function getHead(): Element
 	{
 		return (new Element())->addChild((new Element('Precizejums'))->addContent('false'))
-			->addChild((new Element('PrecizejamaisDokuments'))
-				->addAttribute(new Attribute('xsi:nil', 'true')))
+			->addChild((new Element('PrecizejamaisDokuments'))->addAttribute(new Attribute('xsi:nil', 'true')))
 			->addChild((new Element('Id'))->addContent(RAND(10000000, 99999999)))
 			->addChild((new Element('UID'))->addContent(Uuid::uuid4()))
 			->addChild((new Element('NmrKods'))->addContent(env('NMK')))
-			->addChild((new Element('ParskGads'))->addContent('2020'))
-			->addChild((new Element('ParskMen'))->addContent('11'))
+			->addChild((new Element('ParskGads'))->addContent(date('Y',strtotime('-1 month',time()))))
+			->addChild((new Element('ParskMen'))->addContent(date('m',strtotime('-1 month',time()))))
 			->addChild((new Element('Epasts'))->addContent(env('EMAIL')))
 			->addChild((new Element('Talrunis'))->addContent(env('PHONE')))
 			->addChild((new Element('Sagatavotajs'))->addContent(env('REPORT_PREPARED_BY')))

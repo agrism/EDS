@@ -2,7 +2,8 @@
 
 namespace Eds\Gui\Sub\EgoMedia;
 
-use Eds\Eds\EdsIinKopsavilkums;
+
+use Eds\Eds\EdsIinKopsavilkums\V2\EdsIinKopsavilkums;
 use Eds\Gui\Sub\Report;
 
 class EgoIinKopsavilkums extends Report
@@ -30,9 +31,9 @@ class EgoIinKopsavilkums extends Report
 				1,
 				$incomeItem['Vārds, Uzvārds_2'],
 				'1003',
-				'2020-12-01',
-				'2020-12-31',
-				11,
+				date('Y-m-d', strtotime('-1 months',strtotime(date('Y-m-01')))),
+				date('Y-m-d', strtotime('-1 day',strtotime(date('Y-m-01')))),
+				date('m', strtotime('-1 month', strtotime(date('Y-m-d')))),
 				$incomeItem['Bruto_6'],
 				0,
 				0,
